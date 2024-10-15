@@ -1,12 +1,33 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using System.Windows.Forms;
 
 namespace ChooseDog
 {
+
     public partial class Form1 : Form
     {
+        // Словарь для сопоставления названий параметров из кода с колонками из CSV
+        private readonly Dictionary<string, string> columnMapping = new Dictionary<string, string>
+    {
+        { "Ласковый с семьей", "Affectionate With Family" },
+        { "Хорошо с маленькими детьми", "Good With Young Children" },
+        { "Хорошо с другими собаками", "Good With Other Dogs" },
+        { "Уровень линьки", "Shedding Level" },
+        { "Частота ухода за шерстью", "Coat Grooming Frequency" },
+        { "Уровень слюнотечения", "Drooling Level" },
+        { "Открытость к незнакомцам", "Openness To Strangers" },
+        { "Уровень игривости", "Playfulness Level" },
+        { "Сторожевая собака/Защитный характер", "Watchdog/Protective Nature" },
+        { "Уровень адаптивности", "Adaptability Level" },
+        { "Уровень обучаемости", "Trainability Level" },
+        { "Уровень энергии", "Energy Level" },
+        { "Уровень лая", "Barking Level" },
+        { "Потребность в умственной стимуляции", "Mental Stimulation Needs" }
+    };
+
         // Узел дерева
         class Node
         {
@@ -113,23 +134,21 @@ namespace ChooseDog
             // Инициализируем словарь параметров со значениями 0
             parameterValues = new Dictionary<string, int>
             {
-                { "Ласковый с семьей", 0 },
-                { "Хорошо с маленькими детьми", 0 },
-                { "Хорошо с другими собаками", 0 },
-                { "Уровень игривости", 0 },
-                { "Уровень обучаемости", 0 },
-                { "Потребность в умственной стимуляции", 0 },
-                { "Сторожевая собака/Защитный характер", 0 },
-                { "Открытость к незнакомцам", 0 },
-                { "Уровень энергии", 0 },
-                { "Уровень адаптивности", 0 },
-                { "Готовы ли вы тратить время на постоянный уход за собакой?", 0 },
-                { "Частота ухода за шерстью", 0 },
-                { "Уровень линьки", 0 },
-                { "Уровень слюнотечения", 0 },
-                { "Тип шерсти", 0 },
-                { "Длина шерсти", 0 },
-                { "Уровень лая", 0 }
+                { "Affectionate With Family", 0 },//Ласковый с семьей
+                { "Good With Young Children", 0 },//Хорошо с маленькими детьми
+                { "Good With Other Dogs", 0 },//Хорошо с другими собаками
+                { "Playfulness Level", 0 },//Уровень игривости
+                { "Trainability Level", 0 },//Уровень обучаемости
+                { "Mental Stimulation Needs", 0 },//Потребность в умственной стимуляции
+                { "Watchdog/Protective Nature", 0 },//Сторожевая собака/Защитный характер
+                { "Openness To Strangers", 0 },//Открытость к незнакомцам
+                { "Energy Level", 0 },//Уровень энергии
+                { "Adaptability Level", 0 },//Уровень адаптивности
+                //{ "Готовы ли вы тратить время на постоянный уход за собакой?", 0 },//Готовы ли вы тратить время на постоянный уход за собакой?
+                { "Coat Grooming Frequency", 0 },//Частота ухода за шерстью
+                { "Shedding Level", 0 },//Уровень линьки
+                { "Drooling Level", 0 },//Уровень слюнотечения
+                { "Barking Level", 0 }//Уровень лая
             };
         }
 
@@ -148,12 +167,61 @@ namespace ChooseDog
         }
 
         // Метод для отображения результатов
+        // Обновленный метод ShowResults()
+        // Обновленный метод ShowResults()
         private void ShowResults()
         {
-            StringBuilder result = new StringBuilder("Результаты параметров:\n");
-            foreach (var parameter in parameterValues)
+            // Загружаем данные о породах из CSV
+            DataTable breedDataTable = LoadBreedData();
+
+            // Список для хранения оценок соответствия каждой породы
+            List<Tuple<string, int>> breedScores = new List<Tuple<string, int>>();
+
+            // Словарь для хранения баллов параметров для каждой породы
+            Dictionary<string, Dictionary<string, int>> breedParameterScores = new Dictionary<string, Dictionary<string, int>>();
+
+            // Вычисляем оценку соответствия для каждой породы
+            foreach (DataRow breedData in breedDataTable.Rows)
             {
-                result.AppendLine($"{parameter.Key}: {parameter.Value}");
+                int score = CalculateMatchScore(parameterValues, breedData);
+                string breedName = breedData["Breed"].ToString();
+                breedScores.Add(new Tuple<string, int>(breedName, score));
+
+                // Хранение баллов параметров
+                var parameterScores = new Dictionary<string, int>();
+                foreach (var parameter in parameterValues)
+                {
+                    string parameterName = parameter.Key;
+                    int userValue = parameter.Value;
+
+                    // Получаем соответствующее имя столбца из CSV
+                    if (columnMapping.ContainsKey(parameterName))
+                    {
+                        string columnName = columnMapping[parameterName];
+                        int breedValue = Convert.ToInt32(breedData[columnName]);
+                        parameterScores[parameterName] = (breedValue);
+                    }
+                }
+                breedParameterScores[breedName] = parameterScores;
+            }
+
+            // Сортируем по убыванию оценки соответствия
+            breedScores.Sort((a, b) => b.Item2.CompareTo(a.Item2));
+
+            // Выводим топ-3 породы
+            StringBuilder result = new StringBuilder("Подходящие породы:\n");
+            for (int i = 0; i < 3 && i < breedScores.Count; i++)
+            {
+                string breedName = breedScores[i].Item1;
+                int score = breedScores[i].Item2;
+                result.AppendLine($"{breedName} (оценка: {score})");
+
+                // Вывод баллов параметров для каждой из трех пород
+                result.AppendLine("Баллы параметров:");
+                foreach (var parameterScore in breedParameterScores[breedName])
+                {
+                    result.AppendLine($"{parameterScore.Key}: {parameterScore.Value}");
+                }
             }
 
             label_Question.Text = result.ToString();
@@ -161,6 +229,9 @@ namespace ChooseDog
             button_IDK.Enabled = false;
             button_No.Enabled = false;
         }
+
+
+
 
         // Обработчик для кнопки "Да"
         private void button_Yes_Click(object sender, EventArgs e)
@@ -203,5 +274,77 @@ namespace ChooseDog
                 ShowNextQuestion();
             }
         }
+        // Метод для вычисления оценки соответствия породы
+        private int CalculateMatchScore(Dictionary<string, int> userPreferences, DataRow breedData)
+        {
+            int score = 0;
+            // Словарь для сопоставления названий параметров из кода с колонками из CSV
+            Dictionary<string, string> columnMapping = new Dictionary<string, string>
+    {
+        { "Ласковый с семьей", "Affectionate With Family" },
+        { "Хорошо с маленькими детьми", "Good With Young Children" },
+        { "Хорошо с другими собаками", "Good With Other Dogs" },
+        { "Уровень линьки", "Shedding Level" },
+        { "Частота ухода за шерстью", "Coat Grooming Frequency" },
+        { "Уровень слюнотечения", "Drooling Level" },
+        { "Открытость к незнакомцам", "Openness To Strangers" },
+        { "Уровень игривости", "Playfulness Level" },
+        { "Сторожевая собака/Защитный характер", "Watchdog/Protective Nature" },
+        { "Уровень адаптивности", "Adaptability Level" },
+        { "Уровень обучаемости", "Trainability Level" },
+        { "Уровень энергии", "Energy Level" },
+        { "Уровень лая", "Barking Level" },
+        { "Потребность в умственной стимуляции", "Mental Stimulation Needs" }
+    };
+
+            foreach (var parameter in userPreferences)
+            {
+                string parameterName = parameter.Key;
+                int userValue = parameter.Value;
+
+                if (columnMapping.ContainsKey(parameterName))
+                {
+                    string columnName = columnMapping[parameterName];
+                    int breedValue = Convert.ToInt32(breedData[columnName]);
+
+                    // Увеличиваем оценку, если значения совпадают
+                    if (userValue == breedValue)
+                    {
+                        score += 2;
+                    }
+                    else if (Math.Abs(userValue - breedValue) == 1)
+                    {
+                        // Если значения различаются на 1, добавляем 1 балл
+                        score += 1;
+                    }
+                }
+            }
+            return score;
+        }
+        // Метод для загрузки данных о породах из CSV
+        private DataTable LoadBreedData()
+        {
+            DataTable dataTable = new DataTable();
+            string[] csvLines = System.IO.File.ReadAllLines("C:\\Users\\egori\\OneDrive\\Рабочий стол\\Учёба\\4 курс 7 семестр\\СППР\\Lab 1 Диагностическая ситсема принтия решений\\breed_traits_new.csv");
+            if (csvLines.Length > 0)
+            {
+                // Заголовки
+                string[] headers = csvLines[0].Split(',');
+                foreach (string header in headers)
+                {
+                    dataTable.Columns.Add(header);
+                }
+
+                // Данные
+                for (int i = 1; i < csvLines.Length; i++)
+                {
+                    string[] values = csvLines[i].Split(',');
+                    dataTable.Rows.Add(values);
+                }
+            }
+            return dataTable;
+        }
+        // Метод для вычисления оценки соответствия породы
+
     }
 }
