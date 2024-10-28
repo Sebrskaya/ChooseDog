@@ -1,4 +1,4 @@
-﻿namespace ChooseDog
+namespace ChooseDog
 {
     partial class Form1
     {
@@ -36,6 +36,7 @@
             // 
             // button_Yes
             // 
+            this.button_Yes.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button_Yes.Location = new System.Drawing.Point(68, 291);
             this.button_Yes.Name = "button_Yes";
             this.button_Yes.Size = new System.Drawing.Size(171, 68);
@@ -46,6 +47,7 @@
             // 
             // button_IDK
             // 
+            this.button_IDK.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button_IDK.Location = new System.Drawing.Point(317, 291);
             this.button_IDK.Name = "button_IDK";
             this.button_IDK.Size = new System.Drawing.Size(171, 68);
@@ -56,6 +58,7 @@
             // 
             // button_No
             // 
+            this.button_No.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button_No.Location = new System.Drawing.Point(567, 291);
             this.button_No.Name = "button_No";
             this.button_No.Size = new System.Drawing.Size(171, 68);
@@ -63,15 +66,17 @@
             this.button_No.Text = "Нет";
             this.button_No.UseVisualStyleBackColor = true;
             this.button_No.Click += new System.EventHandler(this.button_No_Click);
-            // 
+            // F
             // label_Question
             // 
             this.label_Question.AutoSize = true;
-            this.label_Question.Location = new System.Drawing.Point(378, 131);
+            this.label_Question.Font = new System.Drawing.Font("Times New Roman", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label_Question.Location = new System.Drawing.Point(65, 39);
             this.label_Question.Name = "label_Question";
-            this.label_Question.Size = new System.Drawing.Size(35, 13);
+            this.label_Question.Size = new System.Drawing.Size(61, 23);
             this.label_Question.TabIndex = 3;
             this.label_Question.Text = "label1";
+            this.label_Question.Click += new System.EventHandler(this.label_Question_Click);
             // 
             // Form1
             // 
